@@ -13,8 +13,12 @@ filters:
 
 Upload your parquet file to view and edit.
 
+```{r renv-record}
+library(shinylive)
+```
+
 ::: {.column-screen-inset}
-```{shinylive-r}
+```{shinylive-r app}
 #| standalone: true
 #| viewerHeight: 800
 
