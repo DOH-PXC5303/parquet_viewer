@@ -1,0 +1,24 @@
+---
+title: "Parquet Viewer"
+format: 
+  html:
+    page-layout: full
+execute: 
+  echo: false
+  warning: false
+  message: false
+filters:
+  - shinylive
+---
+
+Upload your parquet file to view and edit.
+
+::: {.column-screen-inset}
+```{shinylive-r}
+#| standalone: true
+#| viewerHeight: 800
+
+# import app code
+{{< include "src/app.R" >}}
+```
+:::

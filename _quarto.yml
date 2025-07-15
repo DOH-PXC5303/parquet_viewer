@@ -1,0 +1,15 @@
+project:
+  type: website
+
+website:
+  title: "parquet_viewer"
+  navbar:
+    left:
+      - href: viewer.qmd
+        text: Viewer
+
+format:
+  html:
+    theme: cosmo
+    toc: false
+
