@@ -150,7 +150,7 @@ ul.task-list li input[type="checkbox"] {
 #| viewerHeight: 800
 
 ### Edit this comment to render changes if only made to app.R
-# app.R edited: 2025-07-16
+# app.R edited: 2025-07-16 13:32
 
 # import app code
 library(shiny)
@@ -164,44 +164,34 @@ dbtn &lt;- function(...) {
 }
 
 ui &lt;- page_sidebar(
-  sidebar = sidebar(open = 'closed',
+  sidebar = sidebar(open = 'open',
                     actionButton("add_row", "Add Row", disabled=TRUE),
                     actionButton("del_row", "Delete Row", disabled=TRUE),
                     actionButton("show_add_col", "Add Col", disabled=TRUE),  uiOutput("add_col_inputs"),
-                    uiOutput("col_order_ui")
+                    uiOutput("col_order_ui"),
+                    uiOutput("download_parquet_placeholder"),
+                    uiOutput("download_csv_placeholder"),
+                    fileInput("file", "Upload a .parquet file", accept = ".parquet", width = "100%")
   ),
-  fluidRow(
-    column(
-      width = 8,
-      fileInput("file", "Upload a .parquet file", accept = ".parquet", width = "80%")
-    ),
-    column(
-      width = 4,
-      div(style = "height: 30px;"), # empty space above button
-      uiOutput("download_placeholder")
-    )
-  ),
-  hr(),
-  fluidRow(
-    column(
-      width = 12,
-      DTOutput("table"),
-      helpText("TESTFor datetime columns, enter values in the format %Y-%m-%dT%H:%M:%SZ (like `2025-12-31T23:59:59Z`)")
-    )
-  )
+  fluidRow(DTOutput("table")),
+  
 )
 
 server &lt;- function(input, output, session) {
   data &lt;- reactiveVal(NULL)
   
   # Place a disabled action button as download button initially
-  output$download_placeholder &lt;- renderUI(actionButton("no_download", "Download Edited Parquet", disabled=TRUE))
+  output$download_parquet_placeholder &lt;- renderUI(actionButton("no_download_parquet", "Parquet", disabled=TRUE))
+  output$download_csv_placeholder &lt;- renderUI(actionButton("no_download_csv", "CSV", disabled=TRUE))
+  
   
   observeEvent(input$file, {
     req(input$file)
     df &lt;- nanoparquet::read_parquet(input$file$datapath)  # read parquet file as dataframe
     data(df)  # update DT table with df data
-    output$download_placeholder &lt;- renderUI(dbtn("download", "Download Edited Parquet"))  # replace the disabled action btn w/ a download btn
+    # replace disabled actions buttons w/download buttons
+    output$download_parquet_placeholder &lt;- renderUI(dbtn("download_parquet", "Parquet"))  
+    output$download_csv_placeholder &lt;- renderUI(dbtn("download_csv", "CSV"))
     # Enable the action buttons
     updateActionButton(session, "add_row", disabled = FALSE)
     updateActionButton(session, "del_row", disabled = FALSE)
@@ -214,11 +204,9 @@ server &lt;- function(input, output, session) {
     datatable(
       data(),
       editable = TRUE,
-      selection = 'multiple',
-      extensions = 'Buttons',
+      selection = list(mode = 'single', selected = NULL, target = 'row+column', selectable = NULL),
       options = list(
         dom = 'Bfrtip',
-        buttons = c('copy', 'csv'),
         pageLength = 20,
         scrollX = TRUE
       )
@@ -259,7 +247,9 @@ server &lt;- function(input, output, session) {
           selectInput("new_col_type", "New Column Type",
                       choices = c("character", "float", "integer", "logical", "date", "datetime"),
                       selected = "character"),
-          actionButton("add_col", "Add", class = "btn btn-success")
+          actionButton("add_col", "Add", class = "btn btn-success"),
+          br(),
+          helpText("For datetime columns, enter values in the format %Y-%m-%dT%H:%M:%SZ (like `2025-12-31T23:59:59Z`)")
         )
       })
     } else {
@@ -313,8 +303,8 @@ server &lt;- function(input, output, session) {
   
   
   
-  # Download handler
-  output$download &lt;- downloadHandler(
+  # Parquet download handler
+  output$download_parquet &lt;- downloadHandler(
     filename = function() {
       paste0(tools::file_path_sans_ext(input$file$name), "_edited.parquet")
     },
@@ -322,6 +312,17 @@ server &lt;- function(input, output, session) {
       nanoparquet::write_parquet(data(), file)
     },
     contentType = 'parquet'
+  )
+  
+  # CSV download handler
+  output$download_csv &lt;- downloadHandler(
+    filename = function() {
+      paste0(tools::file_path_sans_ext(input$file$name), "_edited.csv")
+    },
+    content = function(file) {
+      write.csv(data(), file, na="", row.names=FALSE, )
+    },
+    contentType = 'csv'
   )
 }
 
