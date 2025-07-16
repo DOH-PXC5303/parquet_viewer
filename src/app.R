@@ -16,7 +16,7 @@ ui <- fluidPage(
         column(
           width = 4,
           div(style = "height: 30px;"), # empty space above button
-          dbtn("download", "Download Edited Parquet")
+          uiOutput("download_placeholder")
         )
   ),
   hr(),
@@ -30,11 +30,15 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   data <- reactiveVal(NULL)
+  
+  # Place a disabled action button as download button initially
+  output$download_placeholder <- renderUI(actionButton("no_download", "Download Edited Parquet", disabled=TRUE))
 
   observeEvent(input$file, {
     req(input$file)
-    df <- nanoparquet::read_parquet(input$file$datapath)
-    data(df)
+    df <- nanoparquet::read_parquet(input$file$datapath)  # read parquet file as dataframe
+    data(df)  # update DT table with df data
+    output$download_placeholder <- renderUI(dbtn("download", "Download Edited Parquet"))  # replace the disabled action btn w/ a download btn
   })
 
   output$table <- renderDT({
