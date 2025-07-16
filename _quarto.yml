@@ -4,9 +4,13 @@ project:
 website:
   title: "parquet_viewer"
   navbar:
-    left:
-      - href: viewer.qmd
-        text: Viewer
+    tools:
+      - icon: github
+        menu:
+          - text: Repo
+            href:  https://github.com/DOH-PXC5303/parquet_viewer/
+          - text: Report a Bug
+            href:  https://github.com/DOH-PXC5303/parquet_viewer/issues/
 
 format:
   html:
