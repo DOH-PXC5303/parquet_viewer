@@ -1,5 +1,7 @@
 ---
 title: "Parquet Viewer"
+date: last-modified
+date-format: short
 format: 
   html:
     page-layout: full
@@ -19,11 +21,12 @@ Upload your parquet file to view and edit.
 #| standalone: true
 #| viewerHeight: 800
 
+### Edit this comment to render changes if only made to app.R
+# app.R edited: 2025-07-16
+
 # import app code
 {{< include "src/app.R" >}}
 
 ```
 
 :::
-
-# test
