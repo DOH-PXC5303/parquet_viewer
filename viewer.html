@@ -129,7 +129,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">7/16/25</p>
+      <p class="date">7/17/25</p>
     </div>
   </div>
   
@@ -147,10 +147,10 @@ ul.task-list li input[type="checkbox"] {
 #|   shinylive does not work in self-contained HTML documents.
 #|   Please set `embed-resources: false` in your metadata.
 #| standalone: true
-#| viewerHeight: 800
+#| viewerHeight: 700
 
 ### Edit this comment to render changes if only made to app.R
-# app.R edited: 2025-07-16 13:32
+# app.R edited: 2025-07-17
 
 # import app code
 library(shiny)
@@ -245,11 +245,10 @@ server &lt;- function(input, output, session) {
           style = "border: 1px solid #ddd; padding: 15px; background-color: #f9f9f9; border-radius: 5px;",
           textInput("new_col_name", "New Column Name", placeholder='col1'),
           selectInput("new_col_type", "New Column Type",
-                      choices = c("character", "float", "integer", "logical", "date", "datetime"),
-                      selected = "character"),
-          actionButton("add_col", "Add", class = "btn btn-success"),
-          br(),
-          helpText("For datetime columns, enter values in the format %Y-%m-%dT%H:%M:%SZ (like `2025-12-31T23:59:59Z`)")
+                      choices = c("string", "float", "integer", "logical", "date", "datetime"),
+                      selected = "string"),
+          uiOutput("def_val_ui"),
+          actionButton("add_col", "Add", class = "btn btn-success")
         )
       })
     } else {
@@ -257,20 +256,52 @@ server &lt;- function(input, output, session) {
     }
   })
   
+  # Set default value ui type
+  output$def_val_ui &lt;- renderUI({
+    req(input$new_col_type)
+    
+    div(
+      radioButtons(
+        "default_val_type",
+        "Default Value:",
+        choices = c("NA", "Other"),
+        selected = "NA",
+        inline = TRUE
+      ),
+      conditionalPanel(
+        condition = "input.default_val_type == 'Other'",
+        switch(
+          input$new_col_type,
+          "string" = textInput("def_val", NULL, placeholder="string", value=""),
+          "float" = numericInput("def_val", NULL, value=0.0),
+          "integer" = numericInput("def_val", NULL, value=0),
+          "logical" = selectInput("def_val", NULL, choices=c("True"=TRUE, "False"=FALSE), selected=TRUE),
+          "date" = dateInput("def_val", NULL, value=Sys.Date()),
+          "datetime" = div(
+            textInput("def_val", "Default Value (UTC)", value=format(Sys.time(), '%Y-%m-%dT%H:%M:%SZ'), placeholder=format(Sys.time(), '%Y-%m-%dT%H:%M:%SZ')),
+            helpText("Enter values in the format %Y-%m-%dT%H:%M:%SZ (like 2025-12-31T23:59:59Z)")
+          ),
+          NULL
+        )
+      )
+    )
+  })
+  
   # Add col
   observeEvent(input$add_col, {
     req(input$new_col_name)
+    
     df &lt;- data()
     new_col &lt;- make.names(input$new_col_name)
     if (!(new_col %in% colnames(df))) {
-      df[[new_col]] &lt;-   switch(
+      df[[new_col]] &lt;- switch(
         input$new_col_type,
-        "character" = as.character(NA),
-        "float" = as.numeric(NA),
-        "integer" = as.integer(NA),
-        "logical" = as.logical(NA),
-        "date" = as.Date(NA),
-        "datetime" = Sys.time(),
+        "string" = as.character(input$def_val),
+        "float" = as.numeric(input$def_val),
+        "integer" = as.integer(input$def_val),
+        "logical" = as.logical(input$def_val),
+        "date" = if (is.null(input$def_val)) as.Date(NA) else as.Date(input$def_val),
+        "datetime" = as.POSIXct(input$def_val),
         NA
       )
       data(df)
