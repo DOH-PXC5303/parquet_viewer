@@ -19,10 +19,10 @@ Upload your parquet file to view and edit.
 
 ```{shinylive-r}
 #| standalone: true
-#| viewerHeight: 800
+#| viewerHeight: 700
 
 ### Edit this comment to render changes if only made to app.R
-# app.R edited: 2025-07-16 13:32
+# app.R edited: 2025-07-17
 
 # import app code
 {{< include "src/app.R" >}}
