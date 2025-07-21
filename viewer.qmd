@@ -13,6 +13,11 @@ filters:
   - shinylive
 ---
 
+```{r setup}
+# Set up shinylive use by downloading assets
+shinylive::assets_download()
+```
+
 Upload your parquet file to view and edit.
 
 ::: {.column-screen-inset}

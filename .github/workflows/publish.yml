@@ -26,12 +26,6 @@ jobs:
           uses: r-lib/actions/setup-renv@v2
           with:
             cache-version: 1
-
-        - name: Download shinylive assets
-          shell: Rscript {0}
-          run: |
-            if (!requireNamespace("shinylive", quietly = TRUE)) install.packages("shinylive")
-            shinylive::assets_download()
   
         - name: Render and Publish
           uses: quarto-dev/quarto-actions/publish@v2
